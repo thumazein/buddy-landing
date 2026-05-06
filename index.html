@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buddy — Find guys to hang with</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0F0E0B;
+  --bg2: #171612;
+  --surface: #1E1C17;
+  --border: #2E2C25;
+  --text: #F0EDE4;
+  --text2: #9E9A8E;
+  --text3: #5C5A52;
+  --green: #3D7A56;
+  --green-light: #6EBF8B;
+  --green-dim: #1E3D2B;
+  --amber: #C8842A;
+  --amber-light: #F0C060;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Epilogue', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.4;
+}
+
+/* NAV */
+nav {
+  position: fixed; top: 0; left: 0; right: 0;
+  padding: 20px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: rgba(15,14,11,0.85);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+.nav-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 24px; font-weight: 900;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.nav-logo span { color: var(--green-light); }
+.nav-cta {
+  padding: 10px 24px;
+  border-radius: 100px;
+  background: var(--green);
+  color: #fff;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 14px; font-weight: 600;
+  text-decoration: none;
+  transition: background 0.2s;
+}
+.nav-cta:hover { background: var(--green-light); color: var(--bg); }
+
+/* HERO */
+.hero {
+  min-height: 100vh;
+  display: flex; align-items: center;
+  padding: 120px 48px 80px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero-bg-circle {
+  position: absolute;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(61,122,86,0.12) 0%, transparent 70%);
+  top: -100px; right: -200px;
+  pointer-events: none;
+}
+.hero-bg-circle2 {
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200,132,42,0.07) 0%, transparent 70%);
+  bottom: 0; left: -100px;
+  pointer-events: none;
+}
+
+.hero-inner {
+  max-width: 1100px; margin: 0 auto; width: 100%;
+  display: grid; grid-template-columns: 1fr 420px; gap: 80px; align-items: center;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 14px;
+  border: 1px solid var(--green-dim);
+  border-radius: 100px;
+  font-size: 12px; font-weight: 600;
+  color: var(--green-light);
+  text-transform: uppercase; letter-spacing: 0.08em;
+  margin-bottom: 28px;
+  animation: fadeUp 0.6s ease both;
+}
+.eyebrow-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--green-light);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+.hero-h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(48px, 6vw, 80px);
+  font-weight: 900;
+  line-height: 1.0;
+  letter-spacing: -2px;
+  color: var(--text);
+  margin-bottom: 24px;
+  animation: fadeUp 0.6s 0.1s ease both;
+}
+.hero-h1 em {
+  font-style: italic;
+  color: var(--green-light);
+}
+
+.hero-sub {
+  font-size: 18px; font-weight: 300;
+  color: var(--text2);
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 40px;
+  animation: fadeUp 0.6s 0.2s ease both;
+}
+
+.hero-proof {
+  display: flex; align-items: center; gap: 16px;
+  margin-top: 24px;
+  animation: fadeUp 0.6s 0.4s ease both;
+}
+.proof-avatars { display: flex; }
+.proof-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 2px solid var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff;
+  margin-right: -8px;
+}
+.proof-text { font-size: 13px; color: var(--text2); }
+.proof-text strong { color: var(--text); font-weight: 600; }
+
+/* SIGNUP CARD */
+.signup-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px 36px;
+  animation: fadeUp 0.6s 0.3s ease both;
+}
+.signup-card-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 26px; font-weight: 700;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+.signup-card-sub {
+  font-size: 13px; color: var(--text2);
+  margin-bottom: 28px; line-height: 1.5;
+}
+.signup-field {
+  width: 100%;
+  padding: 14px 16px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 15px; color: var(--text);
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.signup-field:focus { border-color: var(--green); }
+.signup-field::placeholder { color: var(--text3); }
+.signup-btn {
+  width: 100%; padding: 16px;
+  border-radius: 12px;
+  background: var(--green);
+  color: #fff;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 16px; font-weight: 600;
+  border: none; cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 16px;
+}
+.signup-btn:hover { background: var(--green-light); color: var(--bg); transform: translateY(-1px); }
+.signup-btn:active { transform: translateY(0); }
+.signup-fine {
+  font-size: 11px; color: var(--text3);
+  text-align: center; line-height: 1.5;
+}
+
+.signup-success {
+  display: none;
+  text-align: center; padding: 20px 0;
+}
+.signup-success-icon {
+  font-size: 40px; margin-bottom: 12px;
+}
+.signup-success-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 22px; font-weight: 700;
+  margin-bottom: 8px;
+}
+.signup-success-sub { font-size: 14px; color: var(--text2); line-height: 1.5; }
+
+/* COUNTER STRIP */
+.counter-strip {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 32px 48px;
+  display: flex; align-items: center; justify-content: center; gap: 80px;
+  background: var(--bg2);
+}
+.counter-item { text-align: center; }
+.counter-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 40px; font-weight: 900;
+  color: var(--green-light);
+  line-height: 1;
+}
+.counter-label { font-size: 12px; color: var(--text3); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+/* HOW IT WORKS */
+.section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 100px 48px;
+}
+.section-eyebrow {
+  font-size: 11px; font-weight: 600; color: var(--green-light);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 16px;
+}
+.section-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(32px, 4vw, 52px); font-weight: 900;
+  line-height: 1.1; letter-spacing: -1px;
+  margin-bottom: 60px;
+}
+.section-title em { font-style: italic; color: var(--green-light); }
+
+.steps {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px;
+  background: var(--border);
+  border-radius: 20px; overflow: hidden;
+}
+.step {
+  background: var(--bg2);
+  padding: 40px 32px;
+}
+.step-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 52px; font-weight: 900;
+  color: var(--border);
+  line-height: 1; margin-bottom: 20px;
+}
+.step-title {
+  font-size: 18px; font-weight: 600;
+  color: var(--text); margin-bottom: 10px;
+}
+.step-body { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+/* WHY */
+.why-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 2px;
+  background: var(--border);
+  border-radius: 20px; overflow: hidden;
+}
+.why-cell {
+  background: var(--bg2);
+  padding: 36px 32px;
+}
+.why-icon { font-size: 28px; margin-bottom: 14px; }
+.why-title { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.why-body { font-size: 14px; color: var(--text2); line-height: 1.7; }
+
+/* QUOTE */
+.quote-section {
+  background: var(--green-dim);
+  border-top: 1px solid rgba(110,191,139,0.15);
+  border-bottom: 1px solid rgba(110,191,139,0.15);
+  padding: 80px 48px;
+}
+.quote-inner { max-width: 700px; margin: 0 auto; text-align: center; }
+.quote-mark {
+  font-family: 'Playfair Display', serif;
+  font-size: 80px; line-height: 0.6;
+  color: var(--green);
+  margin-bottom: 24px;
+}
+.quote-text {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 400; font-style: italic;
+  line-height: 1.4; color: var(--text);
+  margin-bottom: 24px;
+}
+.quote-attr { font-size: 13px; color: var(--text2); }
+
+/* FOOTER CTA */
+.footer-cta {
+  padding: 100px 48px;
+  text-align: center;
+  max-width: 700px; margin: 0 auto;
+}
+.footer-cta-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5vw, 60px); font-weight: 900;
+  line-height: 1.1; letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+.footer-cta-title em { font-style: italic; color: var(--green-light); }
+.footer-cta-sub { font-size: 16px; color: var(--text2); margin-bottom: 40px; line-height: 1.6; }
+.footer-cta-form { display: flex; gap: 12px; max-width: 480px; margin: 0 auto; }
+.footer-cta-form input {
+  flex: 1; padding: 16px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 15px; color: var(--text);
+  outline: none;
+}
+.footer-cta-form input::placeholder { color: var(--text3); }
+.footer-cta-form input:focus { border-color: var(--green); }
+.footer-cta-form button {
+  padding: 16px 28px;
+  background: var(--green);
+  color: #fff;
+  border: none; border-radius: 12px;
+  font-family: 'Epilogue', sans-serif;
+  font-size: 15px; font-weight: 600;
+  cursor: pointer; white-space: nowrap;
+  transition: all 0.2s;
+}
+.footer-cta-form button:hover { background: var(--green-light); color: var(--bg); }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 48px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.footer-logo {
+  font-family: 'Playfair Display', serif;
+  font-size: 18px; font-weight: 900; color: var(--text);
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links a { font-size: 13px; color: var(--text3); text-decoration: none; transition: color 0.2s; }
+.footer-links a:hover { color: var(--text); }
+.footer-copy { font-size: 12px; color: var(--text3); }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  nav { padding: 16px 24px; }
+  .hero { padding: 100px 24px 60px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+  .counter-strip { gap: 40px; padding: 24px; }
+  .section { padding: 60px 24px; }
+  .steps { grid-template-columns: 1fr; }
+  .why-grid { grid-template-columns: 1fr; }
+  .quote-section { padding: 60px 24px; }
+  .footer-cta { padding: 60px 24px; }
+  .footer-cta-form { flex-direction: column; }
+  footer { flex-direction: column; gap: 16px; text-align: center; padding: 24px; }
+  .footer-links { flex-wrap: wrap; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">buddy<span>.</span></div>
+  <a href="#signup" class="nav-cta">Join waitlist</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg-circle"></div>
+  <div class="hero-bg-circle2"></div>
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">
+        <div class="eyebrow-dot"></div>
+        Launching in Chicago first
+      </div>
+      <h1 class="hero-h1">Find guys to<br><em>hang</em> with.</h1>
+      <p class="hero-sub">Buddy matches you with men nearby based on shared interests and when you're both free. No awkward DMs. Just plans.</p>
+      <a href="#signup" class="signup-btn" style="display:inline-block;padding:16px 36px;border-radius:100px;text-decoration:none;font-size:16px;font-weight:600;font-family:Epilogue,sans-serif;animation: fadeUp 0.6s 0.3s ease both;margin-bottom:0;">
+        Join the waitlist →
+      </a>
+      <div class="hero-proof">
+        <div class="proof-avatars">
+          <div class="proof-avatar" style="background:#2B5C3F;">JD</div>
+          <div class="proof-avatar" style="background:#5C4A0F;">TR</div>
+          <div class="proof-avatar" style="background:#3D4F6B;">AK</div>
+          <div class="proof-avatar" style="background:#5C2D2D;">SM</div>
+        </div>
+        <div class="proof-text"><strong>247 guys</strong> already on the list in Chicago</div>
+      </div>
+    </div>
+
+    <div class="signup-card" id="signup">
+      <div class="signup-form-inner">
+        <div class="signup-card-title">Get early access</div>
+        <div class="signup-card-sub">First 500 signups launch before the public. Chicago only for now.</div>
+        <input class="signup-field" type="text" placeholder="Your first name" id="field-name" />
+        <input class="signup-field" type="email" placeholder="Email address" id="field-email" />
+        <input class="signup-field" type="text" placeholder="Your neighborhood (e.g. Lincoln Park)" id="field-hood" />
+        <button class="signup-btn" onclick="handleSignup()">Count me in →</button>
+        <div class="signup-fine">No spam, ever. Just a heads-up when the app is ready.<br>Unsubscribe anytime.</div>
+      </div>
+      <div class="signup-success" id="signup-success">
+        <div class="signup-success-icon">✓</div>
+        <div class="signup-success-title">You're on the list.</div>
+        <div class="signup-success-sub">We'll email you when Buddy launches in Chicago. Tell a friend — the more guys sign up from your neighborhood, the faster we activate it.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COUNTER STRIP -->
+<div class="counter-strip">
+  <div class="counter-item">
+    <div class="counter-num">247</div>
+    <div class="counter-label">Waitlist signups</div>
+  </div>
+  <div class="counter-item">
+    <div class="counter-num">18</div>
+    <div class="counter-label">Neighborhoods</div>
+  </div>
+  <div class="counter-item">
+    <div class="counter-num">500</div>
+    <div class="counter-label">Early access spots</div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<div class="section">
+  <div class="section-eyebrow">How it works</div>
+  <div class="section-title">Three steps to<br><em>actual plans.</em></div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Tell us what you're into</div>
+      <div class="step-body">Pick your interests — basketball, hiking, craft beer, chess, live music, whatever — and when you're generally free during the week. Takes about 3 minutes.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">Get matched with guys nearby</div>
+      <div class="step-body">Buddy surfaces men in your area who share your interests and overlap with your schedule. You see a match score — no mystery about why someone showed up.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Make a specific plan</div>
+      <div class="step-body">Propose something concrete — "pickup hoops Saturday 10am, Wicker Park courts, 2 spots open" — or browse and join plans other guys have posted.</div>
+    </div>
+  </div>
+</div>
+
+<!-- WHY -->
+<div style="background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section">
+    <div class="section-eyebrow">Why Buddy</div>
+    <div class="section-title">Built around how<br>men <em>actually</em> connect.</div>
+    <div class="why-grid">
+      <div class="why-cell">
+        <div class="why-icon">🎯</div>
+        <div class="why-title">Activity-first, not profile-first</div>
+        <div class="why-body">You're not browsing faces. You're browsing plans. The who emerges naturally from the what — the same way it works in real life.</div>
+      </div>
+      <div class="why-cell">
+        <div class="why-icon">📅</div>
+        <div class="why-title">Schedule-aware matching</div>
+        <div class="why-body">A great match who's never free when you are isn't a match. We factor in availability from the start so suggestions are actually actionable.</div>
+      </div>
+      <div class="why-cell">
+        <div class="why-icon">🛡️</div>
+        <div class="why-title">Built-in trust layer</div>
+        <div class="why-body">Phone verified accounts, activity ratings, and a trust score on every profile. You know who you're meeting before you show up.</div>
+      </div>
+      <div class="why-cell">
+        <div class="why-icon">👥</div>
+        <div class="why-title">Groups, not just pairs</div>
+        <div class="why-body">Most activities are better with 3–6 people. Buddy is built around group plans, so you're joining a thing — not just meeting one stranger.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- QUOTE -->
+<div class="quote-section">
+  <div class="quote-inner">
+    <div class="quote-mark">"</div>
+    <div class="quote-text">After 30, making friends feels like you need to file paperwork. I just want someone to shoot hoops with on a Tuesday night.</div>
+    <div class="quote-attr">— Guy we talked to while building this</div>
+  </div>
+</div>
+
+<!-- FOOTER CTA -->
+<div class="footer-cta">
+  <div class="footer-cta-title">Chicago is<br><em>first.</em></div>
+  <div class="footer-cta-sub">We're activating one city at a time. Get on the list now and you'll be among the first guys to use Buddy when it launches in your neighborhood.</div>
+  <div class="footer-cta-form">
+    <input type="email" placeholder="Your email address" id="footer-email" />
+    <button onclick="handleFooterSignup()">Join waitlist</button>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo">buddy.</div>
+  <div class="footer-links">
+    <a href="#">Privacy Policy</a>
+    <a href="#">Terms of Service</a>
+    <a href="mailto:hello@getbuddy.app">Contact</a>
+  </div>
+  <div class="footer-copy">© 2025 Buddy. Chicago, IL.</div>
+</footer>
+
+<script>
+function handleSignup() {
+  const name = document.getElementById('field-name').value.trim();
+  const email = document.getElementById('field-email').value.trim();
+  if (!name || !email) { alert('Please enter your name and email.'); return; }
+  document.querySelector('.signup-form-inner').style.display = 'none';
+  document.getElementById('signup-success').style.display = 'block';
+  // In production: POST to your waitlist backend / Typeform / Mailchimp here
+}
+
+function handleFooterSignup() {
+  const email = document.getElementById('footer-email').value.trim();
+  if (!email) return;
+  document.querySelector('.footer-cta-form').innerHTML = '<div style="color:#6EBF8B;font-weight:600;font-size:16px;padding:16px 0;">✓ You\'re on the list.</div>';
+}
+</script>
+</body>
+</html>
